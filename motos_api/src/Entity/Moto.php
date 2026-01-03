@@ -26,21 +26,21 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(),
         new Post(
-            denormalizationContext: ['groups' => ['motorcycle:create']],
-            validationContext: ['groups' => ['motorcycle:create']]
+            denormalizationContext: ['groups' => ['moto:create']],
+            validationContext: ['groups' => ['moto:create']]
         ),
         new Get(),
         new Put(
-            denormalizationContext: ['groups' => ['motorcycle:update']],
-            validationContext: ['groups' => ['motorcycle:update']]
+            denormalizationContext: ['groups' => ['moto:update']],
+            validationContext: ['groups' => ['moto:update']]
         ),
         new Patch(
-            denormalizationContext: ['groups' => ['motorcycle:update']],
-            validationContext: ['groups' => ['motorcycle:update']]
+            denormalizationContext: ['groups' => ['moto:update']],
+            validationContext: ['groups' => ['moto:update']]
         ),
         new Delete(),
     ],
-    normalizationContext: ['groups' => ['motorcycle:read']]
+    normalizationContext: ['groups' => ['moto:read']]
 )]
 class Moto
 {
@@ -53,34 +53,34 @@ class Moto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['motorcycle:read'])]
+    #[Groups(['moto:read'])]
     private ?int $id;
 
     /**
      * Modelo de la moto.
      */
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(groups: ['motorcycle:create', 'motorcycle:update'])]
+    #[Assert\NotBlank(groups: ['moto:create', 'moto:update'])]
     #[Assert\Length(max: 50)]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private string $modelo;
 
     /**
      * Cilindrada de la moto
      */
     #[ORM\Column]
-    #[Assert\NotNull(groups: ['motorcycle:create', 'motorcycle:update'])]
+    #[Assert\NotNull(groups: ['moto:create', 'moto:update'])]
     #[Assert\Positive]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private int $cilindrada;
 
     /**
      * Marca de la moto.
      */
     #[ORM\Column(length: 40)]
-    #[Assert\NotBlank(groups: ['motorcycle:create', 'motorcycle:update'])]
+    #[Assert\NotBlank(groups: ['moto:create', 'moto:update'])]
     #[Assert\Length(max: 40)]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private string $marca;
 
     /**
@@ -89,15 +89,15 @@ class Moto
      * Los tipos de moto serán constantes almacenados en el listado de MotoTipoEnum.
      */
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(groups: ['motorcycle:create', 'motorcycle:update'])]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Assert\NotBlank(groups: ['moto:create', 'moto:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private string $tipo;
 
     /**
      * Listado de extras de la moto.
      */
     #[ORM\Column(type: Types::JSON)]
-    #[Assert\NotNull(groups: ['motorcycle:create', 'motorcycle:update'])]
+    #[Assert\NotNull(groups: ['moto:create', 'moto:update'])]
     #[Assert\Count(max: 20)]
     #[Assert\All([
         new Assert\Type('string'),
@@ -110,7 +110,7 @@ class Moto
             'maxItems' => 20
         ]
     )]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private array $extras;
 
     /**
@@ -118,7 +118,7 @@ class Moto
      */
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
-    #[Groups(['motorcycle:read', 'motorcycle:create', 'motorcycle:update'])]
+    #[Groups(['moto:read', 'moto:create', 'moto:update'])]
     private ?int $peso;
 
     /**
@@ -127,7 +127,7 @@ class Moto
      * Se podría hacer también utilizando Doctrine, pero se le da prioridad al uso de ApiPlatform debido a requerimientos de la prueba.
      */
     #[ORM\Column]
-    #[Groups(['motorcycle:read'])]
+    #[Groups(['moto:read'])]
     private DateTimeImmutable $createdAt;
 
     /**
@@ -136,21 +136,20 @@ class Moto
      * Se podría hacer también utilizando Doctrine, pero se le da prioridad al uso de ApiPlatform debido a requerimientos de la prueba.
      */
     #[ORM\Column]
-    #[Groups(['motorcycle:read'])]
+    #[Groups(['moto:read'])]
     private DateTimeImmutable $updatedAt;
 
     /**
      * Indica si la moto es de edición limitada.
      * Solo se indica al crearse la entidad de moto, después de esto no se puede cambiar, (no se le indica el grupo de update).
      *
-     * IMPORTANTE: Las propiedades tipadas deben inicializarse para evitar errores de acceso antes de inicialización.
-     * Como edicionLimitada es inmutable y no forma parte del grupo de update, debe inicializarse con un valor
-     * por defecto en la entidad (indicado en el constructor de abajo), manteniendo la validación NotNull únicamente en el grupo de create.
+     * Se define como nullable y sin valor por defecto, siendo obligatorio únicamente en el grupo de create.
+     * De este modo no se asume ningún valor implícito, se evita su modificación posterior y se mantiene la integridad del dominio.
      */
-    #[ORM\Column]
-    #[Assert\NotNull(groups: ['motorcycle:create'])]
-    #[Groups(['motorcycle:read', 'motorcycle:create'])]
-    private bool $edicionLimitada;
+    #[ORM\Column(nullable: true)]
+    #[Assert\NotNull(groups: ['moto:create'])]
+    #[Groups(['moto:read', 'moto:create'])]
+    private ?bool $edicionLimitada;
 
     /**
      * Constructor para inicializaciones
@@ -159,7 +158,7 @@ class Moto
         $this->extras = [];
         $this->id = null;
         $this->peso = null;
-        $this->edicionLimitada = false;
+        $this->edicionLimitada = null;
     }
 
     public function getId(): ?int
@@ -261,12 +260,12 @@ class Moto
         return $this;
     }
 
-    public function isEdicionLimitada(): bool
+    public function isEdicionLimitada(): ?bool
     {
         return $this->edicionLimitada;
     }
 
-    public function setEdicionLimitada(bool $edicionLimitada): self
+    public function setEdicionLimitada(?bool $edicionLimitada): self
     {
         $this->edicionLimitada = $edicionLimitada;
         return $this;
